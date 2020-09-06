@@ -1,0 +1,22 @@
+[package]
+name = "uncased"
+version = "0.1.0"
+authors = ["Sergio Benitez <sb@sergio.bz>"]
+edition = "2018"
+description = "Case-preserving, ASCII case-insensitive, no_std string types."
+documentation = "https://docs.rs/uncased/0.9"
+repository = "https://github.com/SergioBenitez/uncased"
+readme = "README.md"
+keywords = ["ascii", "uncased", "case-preserving", "case-insensitive", "no_std"]
+license = "MIT OR Apache-2.0"
+categories = ["text-processing", "value-formatting", "no-std"]
+
+
+[features]
+default = ["alloc"]
+alloc = []
+
+[dependencies]
+
+[build-dependencies]
+version_check = "0.9"
