@@ -33,6 +33,40 @@ impl<'s> Uncased<'s> {
         Uncased { string: string.into() }
     }
 
+    /// Creates a new `Uncased` string from a borrowed `string`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use uncased::Uncased;
+    ///
+    /// const UNCASED: Uncased = Uncased::from_borrowed("Content-Type");
+    /// assert_eq!(UNCASED, "content-type");
+    /// assert_eq!(UNCASED, "CONTENT-Type");
+    /// ```
+    #[inline(always)]
+    pub const fn from_borrowed(string: &'s str) -> Uncased<'s> {
+        Uncased { string: Cow::Borrowed(string) }
+    }
+
+    /// Creates a new `Uncased` string from `string` without allocating.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use uncased::Uncased;
+    ///
+    /// const UNCASED: Uncased = Uncased::from_owned(String::new());
+    ///
+    /// let uncased = Uncased::from_owned("Content-Type".to_string());
+    /// assert_eq!(uncased, "content-type");
+    /// assert_eq!(uncased, "CONTENT-Type");
+    /// ```
+    #[inline(always)]
+    pub const fn from_owned(string: String) -> Uncased<'s> {
+        Uncased { string: Cow::Owned(string) }
+    }
+
     /// Converts `self` into an owned `String`, allocating if necessary.
     ///
     /// # Example
