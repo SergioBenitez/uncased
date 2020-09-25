@@ -75,6 +75,15 @@ impl UncasedStr {
     }
 }
 
+impl<I: core::slice::SliceIndex<str, Output=str>> core::ops::Index<I> for UncasedStr {
+    type Output = UncasedStr;
+
+    #[inline]
+    fn index(&self, index: I) -> &Self::Output {
+        self.as_str()[index].into()
+    }
+}
+
 impl PartialEq for UncasedStr {
     #[inline(always)]
     fn eq(&self, other: &UncasedStr) -> bool {

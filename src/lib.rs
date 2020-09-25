@@ -13,6 +13,12 @@
 //! assert_eq!(x, y);
 //! assert_eq!(x.as_str(), "hello!");
 //! assert_eq!(y.as_str(), "HelLo!");
+//!
+//! let x_sub = &x[..4];
+//! let y_sub = &y[..4];
+//! assert_eq!(x_sub, y_sub);
+//! assert_eq!(x_sub.as_str(), "hell");
+//! assert_eq!(y_sub.as_str(), "HelL");
 //! ```
 //!
 //! ## Unicode
