@@ -38,7 +38,7 @@
 //! ```
 
 #![no_std]
-
+#![doc(html_root_url = "https://docs.rs/uncased/0.9.3")]
 #![cfg_attr(nightly, feature(doc_cfg))]
 
 #[cfg(feature = "alloc")] extern crate alloc;
