@@ -2,8 +2,10 @@ use core::cmp::Ordering;
 use core::hash::{Hash, Hasher};
 use core::fmt;
 
-/// A cost-free reference to an uncased (case-preserving) ASCII string. This is
-/// typically created from an `&str` as follows:
+/// A cost-free reference to an uncased (case-insensitive, case-preserving)
+/// ASCII string.
+///
+/// This is typically created from an `&str` as follows:
 ///
 /// ```rust
 /// use uncased::UncasedStr;
@@ -48,6 +50,40 @@ impl UncasedStr {
     #[inline(always)]
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+
+    /// Returns the length, in bytes, of `self`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use uncased::UncasedStr;
+    ///
+    /// let uncased_str = UncasedStr::new("Hello!");
+    /// assert_eq!(uncased_str.len(), 6);
+    /// ```
+    #[inline(always)]
+    pub fn len(&self) -> usize {
+        self.as_str().len()
+    }
+
+    /// Returns `true` if `self` starts with any casing of the string `string`;
+    /// otherwise, returns `false`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use uncased::UncasedStr;
+    ///
+    /// let uncased_str = UncasedStr::new("MoOO");
+    /// assert!(uncased_str.starts_with("moo"));
+    /// assert!(uncased_str.starts_with("MOO"));
+    /// assert!(uncased_str.starts_with("MOOO"));
+    /// assert!(!uncased_str.starts_with("boo"));
+    /// ```
+    #[inline(always)]
+    pub fn starts_with(&self, string: &str) -> bool {
+        self.len() >= string.len() && self[..string.len()] == string
     }
 
     /// Converts a `Box<UncasedStr>` into an `Uncased` without copying or

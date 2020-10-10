@@ -8,7 +8,8 @@ use core::fmt;
 
 use crate::UncasedStr;
 
-/// An uncased (case-preserving), owned _or_ borrowed ASCII string.
+/// An uncased (case-insensitive, case-preserving), owned _or_ borrowed ASCII
+/// string.
 #[cfg_attr(nightly, doc(cfg(feature = "alloc")))]
 #[derive(Clone, Debug)]
 pub struct Uncased<'s> {
@@ -83,6 +84,27 @@ impl<'s> Uncased<'s> {
         self.string.into_owned()
     }
 
+    /// Converts `self` into an owned `Uncased<'static>`, allocating if
+    /// necessary.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use uncased::Uncased;
+    ///
+    /// let foo = "foo".to_string();
+    /// let uncased = Uncased::from(foo.as_str());
+    /// let owned: Uncased<'static> = uncased.into_owned();
+    /// assert_eq!(owned, "foo");
+    /// ```
+    #[inline(always)]
+    pub fn into_owned(self) -> Uncased<'static> {
+        match self.string {
+            Cow::Owned(string) => Uncased::new(string),
+            Cow::Borrowed(str) => Uncased::new(String::from(str)),
+        }
+    }
+
     /// Converts `self` into a `Box<UncasedStr>`.
     ///
     /// # Example
@@ -132,6 +154,13 @@ impl Borrow<UncasedStr> for Uncased<'_> {
     #[inline(always)]
     fn borrow(&self) -> &UncasedStr {
         self.as_str().into()
+    }
+}
+
+impl<'s, 'c: 's> From<&'c UncasedStr> for Uncased<'s> {
+    #[inline(always)]
+    fn from(string: &'c UncasedStr) -> Self {
+        Uncased::new(string.as_str())
     }
 }
 
