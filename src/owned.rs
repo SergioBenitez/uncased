@@ -68,6 +68,24 @@ impl<'s> Uncased<'s> {
         Uncased { string: Cow::Owned(string) }
     }
 
+    /// Converts `self` into an owned `Uncased<'static>`, allocating if
+    /// necessary.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use uncased::Uncased;
+    ///
+    /// let foo = "foo".to_string();
+    /// let uncased = Uncased::from(foo.as_str());
+    /// let owned: Uncased<'static> = uncased.into_owned();
+    /// assert_eq!(owned, "foo");
+    /// ```
+    #[inline(always)]
+    pub fn as_uncased_str(&self) -> &UncasedStr {
+        self.as_ref()
+    }
+
     /// Converts `self` into an owned `String`, allocating if necessary.
     ///
     /// # Example
@@ -150,6 +168,20 @@ impl AsRef<UncasedStr> for Uncased<'_> {
     }
 }
 
+impl AsRef<str> for Uncased<'_> {
+    #[inline(always)]
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl AsRef<[u8]> for Uncased<'_> {
+    #[inline(always)]
+    fn as_ref(&self) -> &[u8] {
+        self.as_str().as_bytes()
+    }
+}
+
 impl Borrow<UncasedStr> for Uncased<'_> {
     #[inline(always)]
     fn borrow(&self) -> &UncasedStr {
@@ -185,19 +217,6 @@ impl<'s, 'c: 's> From<Cow<'c, str>> for Uncased<'s> {
     }
 }
 
-impl<'b> PartialOrd<Uncased<'b>> for Uncased<'_> {
-    #[inline(always)]
-    fn partial_cmp(&self, other: &Uncased<'b>) -> Option<Ordering> {
-        self.as_ref().partial_cmp(other.as_ref())
-    }
-}
-
-impl Ord for Uncased<'_> {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.as_ref().cmp(other.as_ref())
-    }
-}
-
 impl fmt::Display for Uncased<'_> {
     #[inline(always)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -205,46 +224,60 @@ impl fmt::Display for Uncased<'_> {
     }
 }
 
-impl<'b> PartialEq<Uncased<'b>> for Uncased<'_> {
-    #[inline(always)]
-    fn eq(&self, other: &Uncased<'b>) -> bool {
-        self.as_ref().eq(other.as_ref())
+macro_rules! impl_partial_eq {
+    ($other:ty $([$o_i:ident])? = $this:ty $([$t_i:ident])?) => (
+        impl PartialEq<$other> for $this {
+            #[inline(always)]
+            fn eq(&self, other: &$other) -> bool {
+                self $(.$t_i())? .eq(other $(.$o_i())?)
+            }
+        }
+    )
+}
+
+impl_partial_eq!(Uncased<'_> [as_uncased_str] = Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(str = Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(Uncased<'_> [as_uncased_str] = str);
+impl_partial_eq!(&str = Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(Uncased<'_> [as_uncased_str] = &str);
+impl_partial_eq!(String [as_str] = Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(Uncased<'_> [as_uncased_str] = String [as_str]);
+impl_partial_eq!(String [as_str] = &Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(&Uncased<'_> [as_uncased_str] = String [as_str]);
+
+
+macro_rules! impl_partial_ord {
+    ($other:ty $([$o_i:ident])? >< $this:ty $([$t_i:ident])?) => (
+        impl PartialOrd<$other> for $this {
+            #[inline(always)]
+            fn partial_cmp(&self, other: &$other) -> Option<Ordering> {
+                let this: &UncasedStr = self$(.$t_i())?.into();
+                let other: &UncasedStr = other$(.$o_i())?.into();
+                this.partial_cmp(other)
+            }
+        }
+    )
+}
+
+impl Ord for Uncased<'_> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.as_uncased_str().cmp(other.as_uncased_str())
     }
 }
 
-impl PartialEq<str> for Uncased<'_> {
-    #[inline(always)]
-    fn eq(&self, other: &str) -> bool {
-        self.as_ref().eq(other)
-    }
-}
-
-impl PartialEq<Uncased<'_>> for str {
-    #[inline(always)]
-    fn eq(&self, other: &Uncased<'_>) -> bool {
-        other.as_ref().eq(self)
-    }
-}
-
-impl<'b> PartialEq<&'b str> for Uncased<'_> {
-    #[inline(always)]
-    fn eq(&self, other: & &'b str) -> bool {
-        self.as_ref().eq(other)
-    }
-}
-
-impl<'b> PartialEq<Uncased<'b>> for &str {
-    #[inline(always)]
-    fn eq(&self, other: &Uncased<'b>) -> bool {
-        other.as_ref().eq(self)
-    }
-}
+impl_partial_ord!(Uncased<'_> [as_uncased_str] >< Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(str >< Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(Uncased<'_> [as_uncased_str] >< str);
+impl_partial_ord!(String [as_str] >< Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(Uncased<'_> [as_uncased_str] >< String [as_str]);
+impl_partial_ord!(String [as_str] >< &Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(&Uncased<'_> [as_uncased_str] >< String [as_str]);
 
 impl Eq for Uncased<'_> {  }
 
 impl Hash for Uncased<'_> {
     #[inline(always)]
     fn hash<H: Hasher>(&self, hasher: &mut H) {
-        self.as_ref().hash(hasher)
+        self.as_uncased_str().hash(hasher)
     }
 }

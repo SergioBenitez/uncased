@@ -2,6 +2,9 @@ use core::cmp::Ordering;
 use core::hash::{Hash, Hasher};
 use core::fmt;
 
+#[cfg(feature = "alloc")]
+use alloc::string::String;
+
 /// A cost-free reference to an uncased (case-insensitive, case-preserving)
 /// ASCII string.
 ///
@@ -111,6 +114,13 @@ impl UncasedStr {
     }
 }
 
+impl<'a> From<&'a str> for &'a UncasedStr {
+    #[inline(always)]
+    fn from(string: &'a str) -> &'a UncasedStr {
+        UncasedStr::new(string)
+    }
+}
+
 impl<I: core::slice::SliceIndex<str, Output=str>> core::ops::Index<I> for UncasedStr {
     type Output = UncasedStr;
 
@@ -120,55 +130,61 @@ impl<I: core::slice::SliceIndex<str, Output=str>> core::ops::Index<I> for Uncase
     }
 }
 
-impl PartialEq for UncasedStr {
-    #[inline(always)]
-    fn eq(&self, other: &UncasedStr) -> bool {
-        self.0.eq_ignore_ascii_case(&other.0)
+impl AsRef<str> for UncasedStr {
+    fn as_ref(&self) -> &str {
+        self.as_str()
     }
 }
 
-impl PartialEq<str> for UncasedStr {
-    #[inline(always)]
-    fn eq(&self, other: &str) -> bool {
-        self.0.eq_ignore_ascii_case(other)
+impl AsRef<[u8]> for UncasedStr {
+    fn as_ref(&self) -> &[u8] {
+        self.as_str().as_bytes()
     }
 }
 
-impl PartialEq<UncasedStr> for str {
+impl fmt::Display for UncasedStr {
     #[inline(always)]
-    fn eq(&self, other: &UncasedStr) -> bool {
-        other.0.eq_ignore_ascii_case(self)
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
     }
 }
 
-impl PartialEq<&str> for UncasedStr {
-    #[inline(always)]
-    fn eq(&self, other: &&str) -> bool {
-        self.0.eq_ignore_ascii_case(other)
-    }
+macro_rules! impl_partial_eq {
+    ($other:ty $([$o_i:ident])? = $this:ty $([$t_i:ident])?) => (
+        impl PartialEq<$other> for $this {
+            #[inline(always)]
+            fn eq(&self, other: &$other) -> bool {
+                self $(.$t_i())? .eq_ignore_ascii_case(other $(.$o_i())?)
+            }
+        }
+    )
 }
 
-impl PartialEq<UncasedStr> for &str {
-    #[inline(always)]
-    fn eq(&self, other: &UncasedStr) -> bool {
-        other.0.eq_ignore_ascii_case(self)
-    }
-}
+impl_partial_eq!(UncasedStr [as_str] = UncasedStr [as_str]);
+impl_partial_eq!(str = UncasedStr [as_str]);
+impl_partial_eq!(UncasedStr [as_str] = str);
+impl_partial_eq!(str = &UncasedStr [as_str]);
+impl_partial_eq!(&UncasedStr [as_str] = str);
+impl_partial_eq!(&str = UncasedStr [as_str]);
+impl_partial_eq!(UncasedStr [as_str] = &str);
 
-impl<'a> From<&'a str> for &'a UncasedStr {
-    #[inline(always)]
-    fn from(string: &'a str) -> &'a UncasedStr {
-        UncasedStr::new(string)
-    }
-}
+#[cfg(feature = "alloc")] impl_partial_eq!(String [as_str] = UncasedStr [as_str]);
+
+#[cfg(feature = "alloc")] impl_partial_eq!(UncasedStr [as_str] = String [as_str] );
 
 impl Eq for UncasedStr {  }
 
-impl Hash for UncasedStr {
-    #[inline(always)]
-    fn hash<H: Hasher>(&self, hasher: &mut H) {
-        self.0.bytes().for_each(|b| hasher.write_u8(b.to_ascii_lowercase()));
-    }
+macro_rules! impl_partial_ord {
+    ($other:ty $([$o_i:ident])? >< $this:ty $([$t_i:ident])?) => (
+        impl PartialOrd<$other> for $this {
+            #[inline(always)]
+            fn partial_cmp(&self, other: &$other) -> Option<Ordering> {
+                let this: &UncasedStr = self$(.$t_i())?.into();
+                let other: &UncasedStr = other$(.$o_i())?.into();
+                this.partial_cmp(other)
+            }
+        }
+    )
 }
 
 impl PartialOrd for UncasedStr {
@@ -186,9 +202,15 @@ impl Ord for UncasedStr {
     }
 }
 
-impl fmt::Display for UncasedStr {
+impl_partial_ord!(str >< UncasedStr);
+impl_partial_ord!(UncasedStr >< str);
+
+#[cfg(feature = "alloc")] impl_partial_ord!(String [as_str] >< UncasedStr);
+#[cfg(feature = "alloc")] impl_partial_ord!(UncasedStr >< String [as_str]);
+
+impl Hash for UncasedStr {
     #[inline(always)]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.fmt(f)
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.0.bytes().for_each(|b| hasher.write_u8(b.to_ascii_lowercase()));
     }
 }

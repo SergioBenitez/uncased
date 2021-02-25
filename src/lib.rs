@@ -28,6 +28,13 @@
 //!
 //! ## Features and `no_std`
 //!
+//! Crate features:
+//!
+//! * `alloc` (_default_) - enables the [`Uncased`] type
+//! * `with-serde` - enables (de)serializing of [`UncasedStr`] via `serde`
+//! * `with-serde-alloc` - enables `alloc`, (de)serializing of [`UncasedStr`]
+//!    and [`Uncased`] via `serde`
+//!
 //! This crate is `#![no_std]` compatible. By default, the `alloc` feature is
 //! enabled, which enables the [`Uncased`] type but requires `alloc` support. To
 //! disable the feature, disable this crate's default features:
@@ -36,6 +43,11 @@
 //! [dependencies]
 //! uncased = { version = "0.9", default-features = false }
 //! ```
+//!
+//! In addition to the `alloc` feature, support for (de)serializing `UncasedStr`
+//! with `serde` can be enabled via the `with-serde` feature. Support for
+//! (de)serserializing both `UncasedStr` and `Uncased` can be enabled via the
+//! `with-serde-alloc` feature, which implicitly enables the `alloc` feature.
 
 #![no_std]
 #![doc(html_root_url = "https://docs.rs/uncased/0.9.3")]
@@ -43,13 +55,15 @@
 
 #[cfg(feature = "alloc")] extern crate alloc;
 
-mod borrowed;
-pub use borrowed::UncasedStr;
-
+#[cfg(feature = "serde")] mod serde;
 #[cfg(feature = "alloc")] mod owned;
-#[cfg(feature = "alloc")] pub use owned::Uncased;
-
 #[cfg(test)] mod tests;
+mod borrowed;
+mod as_uncased;
+
+#[cfg(feature = "alloc")] pub use owned::Uncased;
+pub use borrowed::UncasedStr;
+pub use as_uncased::AsUncased;
 
 /// Returns true if `s1` and `s2` are equal without considering case.
 ///
