@@ -135,7 +135,7 @@ impl<'s> Uncased<'s> {
     /// ```
     #[inline(always)]
     pub fn into_boxed_uncased(self) -> Box<UncasedStr> {
-        // This is simply a `newtype`-like transformation. The `repr(C)` ensures
+        // This is simply a `newtype`-like transformation. The `repr(transparent)` ensures
         // that this is safe and correct. Note this exact pattern appears often
         // in the standard library.
         unsafe {
