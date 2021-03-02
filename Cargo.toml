@@ -1,6 +1,6 @@
 [package]
 name = "uncased"
-version = "0.9.4"
+version = "0.9.5"
 authors = ["Sergio Benitez <sb@sergio.bz>"]
 edition = "2018"
 description = "Case-preserving, ASCII case-insensitive, no_std string types."
