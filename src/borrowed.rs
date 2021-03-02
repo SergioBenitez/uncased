@@ -83,6 +83,13 @@ impl UncasedStr {
     /// assert!(uncased_str.starts_with("MOO"));
     /// assert!(uncased_str.starts_with("MOOO"));
     /// assert!(!uncased_str.starts_with("boo"));
+    ///
+    /// let uncased_str = UncasedStr::new("Bèe");
+    /// assert!(!uncased_str.starts_with("Be"));
+    /// assert!(uncased_str.starts_with("Bè"));
+    /// assert!(uncased_str.starts_with("Bè"));
+    /// assert!(uncased_str.starts_with("bèe"));
+    /// assert!(uncased_str.starts_with("BèE"));
     /// ```
     #[inline(always)]
     pub fn starts_with(&self, string: &str) -> bool {
