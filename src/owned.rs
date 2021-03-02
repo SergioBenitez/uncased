@@ -135,9 +135,9 @@ impl<'s> Uncased<'s> {
     /// ```
     #[inline(always)]
     pub fn into_boxed_uncased(self) -> Box<UncasedStr> {
-        // This is simply a `newtype`-like transformation. The `repr(C)` ensures
-        // that this is safe and correct. Note this exact pattern appears often
-        // in the standard library.
+        // This is simply a `newtype`-like transformation. The
+        // `repr(transparent)` ensures that this is safe and correct. Note this
+        // exact pattern appears often in the standard library.
         unsafe {
             let raw_str = Box::into_raw(self.string.into_owned().into_boxed_str());
             Box::from_raw(raw_str as *mut UncasedStr)
