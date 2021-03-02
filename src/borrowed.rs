@@ -86,7 +86,12 @@ impl UncasedStr {
     /// ```
     #[inline(always)]
     pub fn starts_with(&self, string: &str) -> bool {
-        self.len() >= string.len() && self[..string.len()] == string
+        self.len() >= string.len()
+            && self
+                .as_str()
+                .get(..string.len())
+                .map(|s| Self::new(s) == string)
+                .unwrap_or(false)
     }
 
     /// Converts a `Box<UncasedStr>` into an `Uncased` without copying or
