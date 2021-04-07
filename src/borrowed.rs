@@ -70,6 +70,24 @@ impl UncasedStr {
         self.as_str().len()
     }
 
+    /// Returns `true` if `self` has a length of zero bytes.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uncased::UncasedStr;
+    ///
+    /// let s = UncasedStr::new("");
+    /// assert!(s.is_empty());
+    ///
+    /// let s = UncasedStr::new("not empty");
+    /// assert!(!s.is_empty());
+    /// ```
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.as_str().is_empty()
+    }
+
     /// Returns `true` if `self` starts with any casing of the string `string`;
     /// otherwise, returns `false`.
     ///
