@@ -1,6 +1,6 @@
 #![allow(deprecated)]
 
-use crate::UncasedStr;
+use crate::{static_uncased_str, UncasedStr};
 
 use core::hash::{Hash, Hasher, SipHasher};
 
@@ -57,4 +57,10 @@ fn test_case_cmp() {
     assert!(UncasedStr::new("Aa") > UncasedStr::new("A"));
     assert!(UncasedStr::new("aA") > UncasedStr::new("a"));
     assert!(UncasedStr::new("aA") > UncasedStr::new("A"));
+}
+
+#[test]
+fn test_static() {
+    const FOO: &UncasedStr = static_uncased_str!("FOO");
+    assert_eq!(FOO, UncasedStr::new("foo"));
 }
