@@ -242,3 +242,20 @@ impl Hash for UncasedStr {
         self.0.bytes().for_each(|b| hasher.write_u8(b.to_ascii_lowercase()));
     }
 }
+
+/// Cost-free conversion from a `&'static str` to a `&'static UncasedStr`.
+///
+/// This macro can be used in the definition of a static or const variable,
+/// while [`UncasedStr::new`] cannot.
+///
+/// When it is possible to mark `UncasedStr::new` as a `const fn`
+/// (see [rust-lang/rust#53605]), this macro will be removed.
+///
+/// [rust-lang/rust#53605]: https://github.com/rust-lang/rust/issues/53605
+#[macro_export]
+macro_rules! static_uncased_str {
+    ($string:expr) => {{
+        // This is safe for the same reason that `UncasedStr::new` is safe.
+        unsafe { ::core::mem::transmute::<&'static str, &'static UncasedStr>($string) }
+    }}
+}
