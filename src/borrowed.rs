@@ -22,6 +22,8 @@ pub struct UncasedStr(str);
 impl UncasedStr {
     /// Cost-free conversion from an `&str` reference to an `UncasedStr`.
     ///
+    /// This is a `const fn` on Rust 1.56+.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -33,10 +35,33 @@ impl UncasedStr {
     /// assert_eq!(uncased_str, "HeLLo!");
     /// ```
     #[inline(always)]
+    #[cfg(not(const_fn_transmute))]
     pub fn new(string: &str) -> &UncasedStr {
         // This is a `newtype`-like transformation. `repr(transparent)` ensures
         // that this is safe and correct.
         unsafe { &*(string as *const str as *const UncasedStr) }
+    }
+
+    /// Cost-free conversion from an `&str` reference to an `UncasedStr`.
+    ///
+    /// This is a `const fn` on Rust 1.56+.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use uncased::UncasedStr;
+    ///
+    /// let uncased_str = UncasedStr::new("Hello!");
+    /// assert_eq!(uncased_str, "hello!");
+    /// assert_eq!(uncased_str, "Hello!");
+    /// assert_eq!(uncased_str, "HeLLo!");
+    /// ```
+    #[inline(always)]
+    #[cfg(const_fn_transmute)]
+    pub const fn new(string: &str) -> &UncasedStr {
+        // This is a `newtype`-like transformation. `repr(transparent)` ensures
+        // that this is safe and correct.
+        unsafe { core::mem::transmute(string) }
     }
 
     /// Returns `self` as an `&str`.
