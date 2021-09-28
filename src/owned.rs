@@ -5,6 +5,7 @@ use core::ops::Deref;
 use core::cmp::Ordering;
 use core::hash::{Hash, Hasher};
 use core::fmt;
+use core::str::FromStr;
 
 use crate::UncasedStr;
 
@@ -214,6 +215,14 @@ impl<'s, 'c: 's> From<Cow<'c, str>> for Uncased<'s> {
     #[inline(always)]
     fn from(string: Cow<'c, str>) -> Self {
         Uncased::new(string)
+    }
+}
+
+impl FromStr for Uncased<'static> {
+    type Err = core::convert::Infallible;
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Uncased::from(String::from(s)))
     }
 }
 
