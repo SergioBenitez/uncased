@@ -247,7 +247,9 @@ impl_partial_eq!(Uncased<'_> [as_uncased_str] = String [as_uncased]);
 impl_partial_eq!(String [as_uncased] = &Uncased<'_> [as_uncased_str]);
 impl_partial_eq!(&Uncased<'_> [as_uncased_str] = String [as_uncased]);
 impl_partial_eq!(UncasedStr = Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(&UncasedStr = Uncased<'_> [as_uncased_str]);
 impl_partial_eq!(Uncased<'_> [as_uncased_str] = UncasedStr);
+impl_partial_eq!(Uncased<'_> [as_uncased_str] = &UncasedStr);
 impl_partial_eq!(UncasedStr = &Uncased<'_> [as_uncased_str]);
 impl_partial_eq!(&Uncased<'_> [as_uncased_str] = UncasedStr);
 
@@ -278,8 +280,10 @@ impl_partial_ord!(Uncased<'_> [as_uncased_str] >< String [as_uncased]);
 impl_partial_ord!(String [as_uncased] >< &Uncased<'_> [as_uncased_str]);
 impl_partial_ord!(&Uncased<'_> [as_uncased_str] >< String [as_uncased]);
 impl_partial_ord!(UncasedStr >< Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(&UncasedStr >< Uncased<'_> [as_uncased_str]);
 impl_partial_ord!(Uncased<'_> [as_uncased_str] >< UncasedStr);
 impl_partial_ord!(UncasedStr >< &Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(Uncased<'_> [as_uncased_str] >< &UncasedStr);
 impl_partial_ord!(&Uncased<'_> [as_uncased_str] >< UncasedStr);
 
 impl Eq for Uncased<'_> {  }
