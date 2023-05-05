@@ -6,7 +6,7 @@ use core::cmp::Ordering;
 use core::hash::{Hash, Hasher};
 use core::fmt;
 
-use crate::UncasedStr;
+use crate::{UncasedStr, AsUncased};
 
 /// An uncased (case-insensitive, case-preserving), owned _or_ borrowed ASCII
 /// string.
@@ -229,30 +229,35 @@ macro_rules! impl_partial_eq {
         impl PartialEq<$other> for $this {
             #[inline(always)]
             fn eq(&self, other: &$other) -> bool {
-                self $(.$t_i())? .eq(other $(.$o_i())?)
+                let this: &UncasedStr = self$(.$t_i())?;
+                let other: &UncasedStr = other$(.$o_i())?;
+                this.eq(other)
             }
         }
     )
 }
 
 impl_partial_eq!(Uncased<'_> [as_uncased_str] = Uncased<'_> [as_uncased_str]);
-impl_partial_eq!(str = Uncased<'_> [as_uncased_str]);
-impl_partial_eq!(Uncased<'_> [as_uncased_str] = str);
-impl_partial_eq!(&str = Uncased<'_> [as_uncased_str]);
-impl_partial_eq!(Uncased<'_> [as_uncased_str] = &str);
-impl_partial_eq!(String [as_str] = Uncased<'_> [as_uncased_str]);
-impl_partial_eq!(Uncased<'_> [as_uncased_str] = String [as_str]);
-impl_partial_eq!(String [as_str] = &Uncased<'_> [as_uncased_str]);
-impl_partial_eq!(&Uncased<'_> [as_uncased_str] = String [as_str]);
-
+impl_partial_eq!(str [as_uncased] = Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(Uncased<'_> [as_uncased_str] = str [as_uncased]);
+impl_partial_eq!(&str [as_uncased] = Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(Uncased<'_> [as_uncased_str] = &str [as_uncased]);
+impl_partial_eq!(String [as_uncased] = Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(Uncased<'_> [as_uncased_str] = String [as_uncased]);
+impl_partial_eq!(String [as_uncased] = &Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(&Uncased<'_> [as_uncased_str] = String [as_uncased]);
+impl_partial_eq!(UncasedStr = Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(Uncased<'_> [as_uncased_str] = UncasedStr);
+impl_partial_eq!(UncasedStr = &Uncased<'_> [as_uncased_str]);
+impl_partial_eq!(&Uncased<'_> [as_uncased_str] = UncasedStr);
 
 macro_rules! impl_partial_ord {
     ($other:ty $([$o_i:ident])? >< $this:ty $([$t_i:ident])?) => (
         impl PartialOrd<$other> for $this {
             #[inline(always)]
             fn partial_cmp(&self, other: &$other) -> Option<Ordering> {
-                let this: &UncasedStr = self$(.$t_i())?.into();
-                let other: &UncasedStr = other$(.$o_i())?.into();
+                let this: &UncasedStr = self$(.$t_i())?;
+                let other: &UncasedStr = other$(.$o_i())?;
                 this.partial_cmp(other)
             }
         }
@@ -266,12 +271,16 @@ impl Ord for Uncased<'_> {
 }
 
 impl_partial_ord!(Uncased<'_> [as_uncased_str] >< Uncased<'_> [as_uncased_str]);
-impl_partial_ord!(str >< Uncased<'_> [as_uncased_str]);
-impl_partial_ord!(Uncased<'_> [as_uncased_str] >< str);
-impl_partial_ord!(String [as_str] >< Uncased<'_> [as_uncased_str]);
-impl_partial_ord!(Uncased<'_> [as_uncased_str] >< String [as_str]);
-impl_partial_ord!(String [as_str] >< &Uncased<'_> [as_uncased_str]);
-impl_partial_ord!(&Uncased<'_> [as_uncased_str] >< String [as_str]);
+impl_partial_ord!(str [as_uncased] >< Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(Uncased<'_> [as_uncased_str] >< str [as_uncased]);
+impl_partial_ord!(String [as_uncased] >< Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(Uncased<'_> [as_uncased_str] >< String [as_uncased]);
+impl_partial_ord!(String [as_uncased] >< &Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(&Uncased<'_> [as_uncased_str] >< String [as_uncased]);
+impl_partial_ord!(UncasedStr >< Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(Uncased<'_> [as_uncased_str] >< UncasedStr);
+impl_partial_ord!(UncasedStr >< &Uncased<'_> [as_uncased_str]);
+impl_partial_ord!(&Uncased<'_> [as_uncased_str] >< UncasedStr);
 
 impl Eq for Uncased<'_> {  }
 
