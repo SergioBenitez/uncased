@@ -3,7 +3,7 @@ use core::hash::{Hash, Hasher};
 use core::fmt;
 
 #[cfg(feature = "alloc")]
-use alloc::string::String;
+use alloc::{string::String, sync::Arc};
 
 /// A cost-free reference to an uncased (case-insensitive, case-preserving)
 /// ASCII string.
@@ -174,7 +174,7 @@ impl<'a> From<&'a str> for &'a UncasedStr {
     }
 }
 
-impl<I: core::slice::SliceIndex<str, Output=str>> core::ops::Index<I> for UncasedStr {
+impl<I: core::slice::SliceIndex<str, Output = str>> core::ops::Index<I> for UncasedStr {
     type Output = UncasedStr;
 
     #[inline]
@@ -225,7 +225,7 @@ impl_partial_eq!(UncasedStr [as_str] = &str);
 
 #[cfg(feature = "alloc")] impl_partial_eq!(UncasedStr [as_str] = String [as_str] );
 
-impl Eq for UncasedStr {  }
+impl Eq for UncasedStr { }
 
 macro_rules! impl_partial_ord {
     ($other:ty $([$o_i:ident])? >< $this:ty $([$t_i:ident])?) => (
@@ -265,5 +265,19 @@ impl Hash for UncasedStr {
     #[inline(always)]
     fn hash<H: Hasher>(&self, hasher: &mut H) {
         self.0.bytes().for_each(|b| hasher.write_u8(b.to_ascii_lowercase()));
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl From<&UncasedStr> for Arc<UncasedStr> {
+    #[inline]
+    fn from(v: &UncasedStr) -> Arc<UncasedStr> {
+        // SAFETY: `UncasedStr` is repr(transparent)(str). As a result, `str`
+        // and `UncasedStr` have the same size and alignment. Furthermore, the
+        // pointer passed to `from_raw()` is clearly obtained by calling
+        // `into_raw()`. This fulfills the safety requirements of `from_raw()`.
+        let arc: Arc<str> = Arc::from(&v.0);
+        let raw = Arc::into_raw(arc) as *const str as *const UncasedStr;
+        unsafe { Arc::from_raw(raw) }
     }
 }
