@@ -58,3 +58,9 @@ fn test_case_cmp() {
     assert!(UncasedStr::new("aA") > UncasedStr::new("a"));
     assert!(UncasedStr::new("aA") > UncasedStr::new("A"));
 }
+
+#[test]
+fn test_into_arc() {
+    let arced: alloc::sync::Arc<UncasedStr> = UncasedStr::new("FOOBAR").into();
+    assert!(UncasedStr::new("foobar") == arced.as_ref());
+}
